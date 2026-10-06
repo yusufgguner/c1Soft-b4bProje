@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text;
 using c1Soft_b4bProje.Data;
+using c1Soft_b4bProje.Middleware;
 using c1Soft_b4bProje.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<TenantService>();
+builder.Services.AddScoped<OturumService>();
+builder.Services.AddSingleton<LogService>();
 
 var jwt = builder.Configuration.GetSection("Jwt");
 
@@ -39,6 +42,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             RoleClaimType = ClaimTypes.Role,
             NameClaimType = ClaimTypes.Name,
             ClockSkew = TimeSpan.Zero
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                string? deger = context.Principal?.FindFirst(OturumService.OturumClaim)?.Value;
+                var oturumService = context.HttpContext.RequestServices.GetRequiredService<OturumService>();
+
+                if (!Guid.TryParse(deger, out Guid oturumAnahtari) || !await oturumService.AktifMiAsync(oturumAnahtari))
+                {
+                    context.Fail("Oturumunuz kapatıldı. Hesabınıza başka bir yerden giriş yapılmış olabilir, tekrar giriş yapın.");
+                }
+            },
+            OnChallenge = async context =>
+            {
+                if (context.AuthenticateFailure == null)
+                {
+                    return;
+                }
+
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsJsonAsync(new { mesaj = context.AuthenticateFailure.Message });
+            }
         };
     });
 
@@ -84,6 +112,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseMiddleware<IslemLogMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
