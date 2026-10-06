@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using System.Text;
+using c1Soft_b4bProje.Areas.Admin;
 using c1Soft_b4bProje.Data;
+using c1Soft_b4bProje.Hubs;
 using c1Soft_b4bProje.Middleware;
 using c1Soft_b4bProje.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,7 +12,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -70,7 +72,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAuthentication()
+    .AddCookie(AdminPanel.Sema, options =>
+    {
+        options.LoginPath = "/admin/hesap/giris";
+        options.LogoutPath = "/admin/hesap/cikis";
+        options.AccessDeniedPath = "/admin/hesap/giris";
+        options.Cookie.Name = "b4b_admin";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
+    });
+
 builder.Services.AddAuthorization();
+
+builder.Services.AddSignalR();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -111,10 +126,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseMiddleware<IslemLogMiddleware>();
 app.UseAuthorization();
 
+app.MapAreaControllerRoute(
+    name: "admin",
+    areaName: "Admin",
+    pattern: "admin/{controller=Panel}/{action=Index}/{id?}");
+
 app.MapControllers();
+
+app.MapHub<SiparisHub>("/hubs/siparis");
 
 app.Run();

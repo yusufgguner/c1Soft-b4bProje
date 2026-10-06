@@ -1,0 +1,45 @@
+@{
+    Layout = null;
+}
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Giriş - B4B Yönetim</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/core@1.4.0/dist/css/tabler.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.34.1/dist/tabler-icons.min.css" />
+</head>
+<body class="d-flex flex-column">
+<div class="page page-center">
+    <div class="container container-tight py-4">
+        <div class="text-center mb-4">
+            <h1><i class="ti ti-building-warehouse"></i> B4B Yönetim</h1>
+        </div>
+        <div class="card card-md">
+            <div class="card-body">
+                <h2 class="h2 text-center mb-4">Süper admin girişi</h2>
+                @if (ViewBag.Hata != null)
+                {
+                    <div class="alert alert-danger">@ViewBag.Hata</div>
+                }
+                <form asp-action="Giris" method="post" autocomplete="off">
+                    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+                    <div class="mb-3">
+                        <label class="form-label">Kullanıcı adı</label>
+                        <input type="text" name="kulAdi" class="form-control" required autofocus />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Şifre</label>
+                        <input type="password" name="sifre" class="form-control" required />
+                    </div>
+                    <div class="form-footer">
+                        <button type="submit" class="btn btn-primary w-100">Giriş yap</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

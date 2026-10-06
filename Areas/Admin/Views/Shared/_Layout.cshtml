@@ -1,0 +1,89 @@
+@{
+    string aktif = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string Secili(string ad) => aktif == ad ? "active" : "";
+}
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - B4B Yönetim</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/core@1.4.0/dist/css/tabler.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.34.1/dist/tabler-icons.min.css" />
+    <style>
+        .canli-yeni { animation: canliYeni 4s ease-out; }
+        @@keyframes canliYeni { from { background-color: rgba(47, 179, 68, .25); } to { background-color: transparent; } }
+        .table td { vertical-align: middle; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <h1 class="navbar-brand navbar-brand-autodark">
+                <a asp-controller="Panel" asp-action="Index" class="text-white text-decoration-none">
+                    <i class="ti ti-building-warehouse me-1"></i> B4B Yönetim
+                </a>
+            </h1>
+            <div class="collapse navbar-collapse" id="sidebar-menu">
+                <ul class="navbar-nav pt-lg-3">
+                    <li class="nav-item @Secili("Panel")">
+                        <a class="nav-link" asp-controller="Panel" asp-action="Index"><span class="nav-link-icon"><i class="ti ti-home"></i></span><span class="nav-link-title">Panel</span></a>
+                    </li>
+                    <li class="nav-item @Secili("Siparisler")">
+                        <a class="nav-link" asp-controller="Siparisler" asp-action="Index"><span class="nav-link-icon"><i class="ti ti-shopping-cart"></i></span><span class="nav-link-title">Siparişler</span><span class="badge bg-green ms-auto d-none" id="yeni-siparis-sayaci">0</span></a>
+                    </li>
+                    <li class="nav-item @Secili("Kullanicilar")">
+                        <a class="nav-link" asp-controller="Kullanicilar" asp-action="Index"><span class="nav-link-icon"><i class="ti ti-users"></i></span><span class="nav-link-title">Kullanıcılar</span></a>
+                    </li>
+                    <li class="nav-item @Secili("Oturumlar")">
+                        <a class="nav-link" asp-controller="Oturumlar" asp-action="Index"><span class="nav-link-icon"><i class="ti ti-shield-lock"></i></span><span class="nav-link-title">Oturumlar</span></a>
+                    </li>
+                    <li class="nav-item @Secili("Loglar")">
+                        <a class="nav-link" asp-controller="Loglar" asp-action="Index"><span class="nav-link-icon"><i class="ti ti-list-details"></i></span><span class="nav-link-title">İşlem Logları</span></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+    <div class="page-wrapper">
+        <header class="navbar navbar-expand-md d-print-none">
+            <div class="container-xl">
+                <div class="navbar-nav flex-row order-md-last ms-auto align-items-center">
+                    <span class="badge bg-secondary-lt me-3" id="canli-durum"><i class="ti ti-point-filled"></i> Bağlanıyor</span>
+                    <div class="me-3 text-end">
+                        <div>@(User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value ?? User.Identity?.Name)</div>
+                        <div class="small text-secondary">Süper Admin</div>
+                    </div>
+                    <form asp-controller="Hesap" asp-action="Cikis" method="post">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="ti ti-logout me-1"></i>Çıkış</button>
+                    </form>
+                </div>
+            </div>
+        </header>
+        <div class="page-header d-print-none">
+            <div class="container-xl">
+                <h2 class="page-title">@ViewData["Title"]</h2>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="container-xl">
+                @if (TempData["Mesaj"] != null)
+                {
+                    <div class="alert alert-success">@TempData["Mesaj"]</div>
+                }
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+</div>
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="bildirimler"></div>
+<script src="https://cdn.jsdelivr.net/npm/@@tabler/core@1.4.0/dist/js/tabler.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+<script src="~/js/siparis-canli.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
