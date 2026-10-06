@@ -1,0 +1,25 @@
+@model OturumSatiri
+<tr>
+    <td>
+        <div class="fw-medium">@Model.KulAdi</div>
+        <div class="small text-secondary">@Model.AdSoyad</div>
+    </td>
+    <td><span class="badge bg-azure-lt">@Model.FirmaKodu</span></td>
+    <td><i class="ti ti-world text-secondary me-1"></i>@Model.Domain</td>
+    <td class="text-secondary">@Model.IpAdresi</td>
+    <td class="text-secondary">@Model.GirisTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+    <td>
+        @if (Model.IsAktif)
+        {
+            <span class="badge bg-green-lt">Aktif</span>
+        }
+        else if (Model.DomainDegisimi)
+        {
+            <span class="badge bg-red-lt" title="@Model.KapanmaNedeni">Farklı domain</span>
+        }
+        else
+        {
+            <span class="badge bg-secondary-lt" title="@Model.KapanmaNedeni">Kapandı</span>
+        }
+    </td>
+</tr>

@@ -1,0 +1,14 @@
+@model string
+@{
+    var (yazi, renk) = Model switch
+    {
+        "Pending" => ("Bekliyor", "bg-yellow-lt"),
+        "Approved" => ("Onaylandı", "bg-blue-lt"),
+        "Shipped" => ("Kargoda", "bg-purple-lt"),
+        "Delivered" => ("Teslim edildi", "bg-green-lt"),
+        "Rejected" => ("Reddedildi", "bg-red-lt"),
+        "Cancelled" => ("İptal", "bg-secondary-lt"),
+        _ => (Model, "bg-secondary-lt")
+    };
+}
+<span class="badge @renk">@yazi</span>

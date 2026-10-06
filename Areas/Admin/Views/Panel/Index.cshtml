@@ -1,0 +1,111 @@
+@model PanelOzet
+@{
+    ViewData["Title"] = "Panel";
+}
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body d-flex align-items-center">
+                <span class="bg-green text-white avatar me-3"><i class="ti ti-shopping-cart"></i></span>
+                <div>
+                    <div class="fw-medium"><span id="bugun-siparis">@Model.BugunSiparis</span> sipariş</div>
+                    <div class="text-secondary">Bugün, <span id="bugun-ciro">@Model.BugunCiro.ToString("N2")</span> ₺</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body d-flex align-items-center">
+                <span class="bg-primary text-white avatar me-3"><i class="ti ti-login"></i></span>
+                <div>
+                    <div class="fw-medium">@Model.BugunGiris giriş</div>
+                    <div class="text-secondary">Bugün, @Model.AktifOturum aktif oturum</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body d-flex align-items-center">
+                <span class="bg-red text-white avatar me-3"><i class="ti ti-shield-x"></i></span>
+                <div>
+                    <div class="fw-medium">@Model.BugunDusurulenOturum oturum düşürüldü</div>
+                    <div class="text-secondary">Bugün, farklı domainden giriş</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body d-flex align-items-center">
+                <span class="bg-azure text-white avatar me-3"><i class="ti ti-building"></i></span>
+                <div>
+                    <div class="fw-medium">@Model.FirmaSayisi firma</div>
+                    <div class="text-secondary">@Model.KullaniciSayisi aktif kullanıcı</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-cards">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Son siparişler</h3>
+                <div class="card-actions"><a asp-controller="Siparisler" asp-action="Index">Tümü</a></div>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter">
+                    <thead>
+                    <tr><th>Sipariş</th><th>Firma</th><th>Kullanıcı</th><th>Tarih</th><th class="text-end">Kalem</th><th class="text-end">Tutar</th><th>Durum</th></tr>
+                    </thead>
+                    <tbody id="canli-siparisler" data-en-fazla="10">
+                    @foreach (var siparis in Model.SonSiparisler)
+                    {
+                        <partial name="_SiparisSatiri" model="siparis" />
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Son girişler</h3>
+                <div class="card-actions"><a asp-controller="Kullanicilar" asp-action="Index">Tümü</a></div>
+            </div>
+            <div class="list-group list-group-flush">
+                @foreach (var giris in Model.SonGirisler)
+                {
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="fw-medium">@giris.KulAdi</span>
+                                <span class="badge bg-azure-lt ms-1">@giris.FirmaKodu</span>
+                                <div class="small text-secondary"><i class="ti ti-world me-1"></i>@giris.Domain</div>
+                            </div>
+                            <div class="text-end small">
+                                <div class="text-secondary">@giris.GirisTarihi.ToString("dd.MM HH:mm")</div>
+                                @if (giris.IsAktif)
+                                {
+                                    <span class="badge bg-green-lt">Aktif</span>
+                                }
+                                else if (giris.DomainDegisimi)
+                                {
+                                    <span class="badge bg-red-lt">Farklı domain</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (Model.SonGirisler.Count == 0)
+                {
+                    <div class="list-group-item text-secondary">Henüz giriş yok.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

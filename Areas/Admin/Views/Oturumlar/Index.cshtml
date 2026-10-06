@@ -1,0 +1,94 @@
+@model SayfaliListe<OturumSatiri>
+@{
+    ViewData["Title"] = "Oturumlar";
+    string durum = ViewBag.Durum;
+    var sekmeler = new (string Kod, string Ad, string Ikon)[]
+    {
+        ("aktif", "Aktif oturumlar", "ti-circle-check"),
+        ("dusurulen", "Farklı domainden düşürülenler", "ti-shield-x"),
+        ("hepsi", "Tümü", "ti-list")
+    };
+}
+<div class="alert alert-info">
+    <i class="ti ti-info-circle me-1"></i>
+    Her kullanıcı aynı anda tek oturumla çalışır. Başka bir domainden giriş yapıldığında önceki oturum kapanır ve burada kırmızı olarak görünür.
+</div>
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+            @foreach (var s in sekmeler)
+            {
+                <li class="nav-item">
+                    <a class="nav-link @(durum == s.Kod ? "active" : "")" asp-action="Index" asp-route-durum="@s.Kod" asp-route-firmaId="@ViewBag.FirmaId"><i class="ti @s.Ikon me-1"></i>@s.Ad</a>
+                </li>
+            }
+        </ul>
+    </div>
+    <div class="card-body border-bottom">
+        <form method="get" class="row g-2">
+            <input type="hidden" name="durum" value="@durum" />
+            <div class="col-md-4">
+                <select name="firmaId" class="form-select" asp-items="ViewBag.Firmalar" onchange="this.form.submit()">
+                    <option value="">Tüm firmalar</option>
+                </select>
+            </div>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table card-table table-vcenter">
+            <thead>
+            <tr><th>Kullanıcı</th><th>Firma</th><th>Domain</th><th>IP</th><th>Giriş</th><th>Son işlem / Kapanış</th><th>Durum</th><th></th></tr>
+            </thead>
+            <tbody>
+            @foreach (var o in Model.Kayitlar)
+            {
+                <tr>
+                    <td><div class="fw-medium">@o.KulAdi</div><div class="small text-secondary">@o.AdSoyad</div></td>
+                    <td><span class="badge bg-azure-lt">@o.FirmaKodu</span></td>
+                    <td><i class="ti ti-world text-secondary me-1"></i>@o.Domain</td>
+                    <td class="text-secondary">@o.IpAdresi</td>
+                    <td class="text-secondary">@o.GirisTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td class="text-secondary">
+                        @if (o.IsAktif)
+                        {
+                            @o.SonIslemTarihi.ToString("dd.MM.yyyy HH:mm")
+                        }
+                        else
+                        {
+                            @o.CikisTarihi?.ToString("dd.MM.yyyy HH:mm")
+                            <div class="small @(o.DomainDegisimi ? "text-red" : "")">@o.KapanmaNedeni</div>
+                        }
+                    </td>
+                    <td>
+                        @if (o.IsAktif)
+                        {
+                            <span class="badge bg-green-lt">Aktif</span>
+                        }
+                        else if (o.DomainDegisimi)
+                        {
+                            <span class="badge bg-red-lt">Farklı domain</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary-lt">Kapandı</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        @if (o.IsAktif)
+                        {
+                            <form asp-action="Kapat" asp-route-id="@o.OturumId" method="post" onsubmit="return confirm('@o.KulAdi kullanıcısının oturumu kapatılsın mı?')">
+                                <button class="btn btn-outline-danger btn-sm"><i class="ti ti-power me-1"></i>Kapat</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            @if (Model.ToplamKayit == 0)
+            {
+                <tr><td colspan="8" class="text-secondary text-center py-4">Oturum bulunamadı.</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <partial name="_Sayfalama" model="(Model.Sayfa, Model.ToplamSayfa, Model.ToplamKayit)" />
+</div>

@@ -1,0 +1,79 @@
+@model SayfaliListe<IslemLog>
+@{
+    ViewData["Title"] = "İşlem Logları";
+    var filtre = (FiltreSecenegi)ViewBag.Filtre;
+    var turAdlari = new Dictionary<string, (string Ad, string Renk)>
+    {
+        [LogTurleri.Giris] = ("Giriş", "bg-green-lt"),
+        [LogTurleri.HataliGiris] = ("Hatalı giriş", "bg-orange-lt"),
+        [LogTurleri.Cikis] = ("Çıkış", "bg-secondary-lt"),
+        [LogTurleri.OturumDusuruldu] = ("Oturum düşürüldü", "bg-red-lt"),
+        [LogTurleri.Istek] = ("İstek", "bg-blue-lt"),
+        [LogTurleri.Admin] = ("Yönetici", "bg-purple-lt")
+    };
+    string DurumRengi(int? kod) => kod switch
+    {
+        null => "",
+        < 300 => "text-green",
+        < 400 => "text-azure",
+        < 500 => "text-orange",
+        _ => "text-red"
+    };
+}
+<div class="card">
+    <div class="card-body border-bottom">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <select name="firmaId" class="form-select" asp-items="ViewBag.Firmalar">
+                    <option value="">Tüm firmalar</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="tur" class="form-select">
+                    <option value="">Tüm işlemler</option>
+                    @foreach (var tur in turAdlari)
+                    {
+                        <option value="@tur.Key" selected="@(filtre.Tur == tur.Key)">@tur.Value.Ad</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2"><input type="date" name="baslangic" class="form-control" value="@filtre.Baslangic?.ToString("yyyy-MM-dd")" /></div>
+            <div class="col-md-2"><input type="date" name="bitis" class="form-control" value="@filtre.Bitis?.ToString("yyyy-MM-dd")" /></div>
+            <div class="col-md-2"><input type="text" name="arama" class="form-control" placeholder="Kullanıcı / adres / IP" value="@filtre.Arama" /></div>
+            <div class="col-md-1"><button class="btn btn-primary w-100"><i class="ti ti-filter"></i></button></div>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table card-table table-vcenter table-sm">
+            <thead>
+            <tr><th>Tarih</th><th>İşlem</th><th>Kullanıcı</th><th>İstek</th><th class="text-end">Sonuç</th><th>Domain / IP</th><th>Açıklama</th></tr>
+            </thead>
+            <tbody>
+            @foreach (var log in Model.Kayitlar)
+            {
+                var tur = turAdlari.TryGetValue(log.Tur, out var t) ? t : (log.Tur, "bg-secondary-lt");
+                <tr>
+                    <td class="text-secondary text-nowrap">@log.Tarih.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                    <td><span class="badge @tur.Item2">@tur.Item1</span></td>
+                    <td>@(log.KulAdi ?? "-")</td>
+                    <td class="text-nowrap"><span class="badge bg-dark-lt me-1">@log.Metot</span><code>@log.Yol</code></td>
+                    <td class="text-end text-nowrap @DurumRengi(log.DurumKodu)">
+                        @log.DurumKodu
+                        @if (log.SureMs != null)
+                        {
+                            <span class="small text-secondary">(@log.SureMs ms)</span>
+                        }
+                    </td>
+                    <td class="small"><div>@log.Domain</div><div class="text-secondary">@log.IpAdresi</div></td>
+                    <td class="small">@log.Aciklama</td>
+                </tr>
+            }
+            @if (Model.ToplamKayit == 0)
+            {
+                <tr><td colspan="7" class="text-secondary text-center py-4">Log bulunamadı.</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <partial name="_Sayfalama" model="(Model.Sayfa, Model.ToplamSayfa, Model.ToplamKayit)" />
+</div>

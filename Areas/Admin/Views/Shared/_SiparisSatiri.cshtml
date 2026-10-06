@@ -1,0 +1,10 @@
+@model SiparisSatiri
+<tr data-siparis-id="@Model.SiparisId">
+    <td><a asp-controller="Siparisler" asp-action="Detay" asp-route-id="@Model.SiparisId" class="fw-medium">@Model.SiparisNo</a></td>
+    <td><span class="badge bg-azure-lt">@Model.FirmaKodu</span></td>
+    <td>@Model.KulAdi</td>
+    <td class="text-secondary">@Model.Tarih.ToString("dd.MM.yyyy HH:mm")</td>
+    <td class="text-end">@Model.KalemSayisi</td>
+    <td class="text-end fw-medium">@Model.GenelTutar.ToString("N2") ₺</td>
+    <td class="siparis-durum"><partial name="_SiparisDurumu" model="Model.SiparisDurumu" /></td>
+</tr>

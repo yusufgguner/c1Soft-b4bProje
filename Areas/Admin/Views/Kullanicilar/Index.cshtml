@@ -1,0 +1,83 @@
+@{
+    ViewData["Title"] = "Kullanıcılar";
+    string sekme = ViewBag.Sekme;
+    var filtre = (FiltreSecenegi)ViewBag.Filtre;
+}
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+                <a class="nav-link @(sekme == "girisler" ? "active" : "")" asp-action="Index" asp-route-sekme="girisler"><i class="ti ti-login me-1"></i>Sisteme girenler</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(sekme == "kayitlar" ? "active" : "")" asp-action="Index" asp-route-sekme="kayitlar"><i class="ti ti-user-plus me-1"></i>Yeni kayıtlar</a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body border-bottom">
+        <form method="get" class="row g-2">
+            <input type="hidden" name="sekme" value="@sekme" />
+            <div class="col-md-3">
+                <select name="firmaId" class="form-select" asp-items="ViewBag.Firmalar">
+                    <option value="">Tüm firmalar</option>
+                </select>
+            </div>
+            <div class="col-md-2"><input type="date" name="baslangic" class="form-control" value="@filtre.Baslangic?.ToString("yyyy-MM-dd")" /></div>
+            <div class="col-md-2"><input type="date" name="bitis" class="form-control" value="@filtre.Bitis?.ToString("yyyy-MM-dd")" /></div>
+            <div class="col-md-4"><input type="text" name="arama" class="form-control" placeholder="@(sekme == "girisler" ? "Kullanıcı adı / domain" : "Kullanıcı adı / ad soyad")" value="@filtre.Arama" /></div>
+            <div class="col-md-1"><button class="btn btn-primary w-100"><i class="ti ti-filter"></i></button></div>
+        </form>
+    </div>
+    @if (sekme == "kayitlar")
+    {
+        var liste = (SayfaliListe<KullaniciSatiri>)ViewBag.Kayitlar;
+        <div class="table-responsive">
+            <table class="table card-table table-vcenter">
+                <thead>
+                <tr><th>Kullanıcı</th><th>Firma</th><th>Rol</th><th>E-posta</th><th>Kayıt tarihi</th><th>Son giriş</th><th>Durum</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var k in liste.Kayitlar)
+                {
+                    <tr>
+                        <td><div class="fw-medium">@k.KulAdi</div><div class="small text-secondary">@k.AdSoyad</div></td>
+                        <td><span class="badge bg-azure-lt">@k.FirmaKodu</span> <span class="small text-secondary">@k.FirmaAdi</span></td>
+                        <td>@k.Rol</td>
+                        <td class="text-secondary">@k.Email</td>
+                        <td>@k.OlusturmaTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td class="text-secondary">@(k.SonGirisTarihi?.ToString("dd.MM.yyyy HH:mm") ?? "Hiç girmedi")</td>
+                        <td>@if (k.IsAktif) { <span class="badge bg-green-lt">Aktif</span> } else { <span class="badge bg-secondary-lt">Pasif</span> }</td>
+                    </tr>
+                }
+                @if (liste.ToplamKayit == 0)
+                {
+                    <tr><td colspan="7" class="text-secondary text-center py-4">Kayıt bulunamadı.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <partial name="_Sayfalama" model="(liste.Sayfa, liste.ToplamSayfa, liste.ToplamKayit)" />
+    }
+    else
+    {
+        var liste = (SayfaliListe<OturumSatiri>)ViewBag.Girisler;
+        <div class="table-responsive">
+            <table class="table card-table table-vcenter">
+                <thead>
+                <tr><th>Kullanıcı</th><th>Firma</th><th>Domain</th><th>IP</th><th>Giriş</th><th>Durum</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var giris in liste.Kayitlar)
+                {
+                    <partial name="_OturumSatiri" model="giris" />
+                }
+                @if (liste.ToplamKayit == 0)
+                {
+                    <tr><td colspan="6" class="text-secondary text-center py-4">Giriş kaydı bulunamadı.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <partial name="_Sayfalama" model="(liste.Sayfa, liste.ToplamSayfa, liste.ToplamKayit)" />
+    }
+</div>
