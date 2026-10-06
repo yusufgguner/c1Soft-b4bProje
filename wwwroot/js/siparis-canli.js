@@ -77,6 +77,9 @@
             <td class="siparis-durum">${durumRozeti(s.siparisDurumu)}</td>`;
         tablo.prepend(satir);
 
+        const toplam = tablo.closest(".card")?.querySelector(".toplam-kayit");
+        if (toplam) toplam.textContent = parseInt(toplam.textContent, 10) + 1;
+
         const enFazla = parseInt(tablo.dataset.enFazla || "0", 10);
         while (enFazla > 0 && tablo.rows.length > enFazla) {
             tablo.deleteRow(tablo.rows.length - 1);

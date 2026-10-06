@@ -12,7 +12,7 @@
     int son = Math.Min(Model.ToplamSayfa, Model.Sayfa + 2);
 }
 <div class="card-footer d-flex align-items-center">
-    <p class="m-0 text-secondary">Toplam <strong>@Model.ToplamKayit</strong> kayıt</p>
+    <p class="m-0 text-secondary">Toplam <strong class="toplam-kayit">@Model.ToplamKayit</strong> kayıt</p>
     @if (Model.ToplamSayfa > 1)
     {
         <ul class="pagination m-0 ms-auto">
