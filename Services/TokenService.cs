@@ -19,7 +19,7 @@ public class TokenService
     }
 
     // Kullanıcı ve firma bilgileriyle JWT token üretir
-    public (string Token, DateTime BitisTarihi) TokenOlustur(Kullanici kullanici, Firma firma)
+    public (string Token, DateTime BitisTarihi) TokenOlustur(Kullanici kullanici, Firma firma, Guid oturumAnahtari)
     {
         var jwt = configuration.GetSection("Jwt");
         int sureDakika = jwt.GetValue<int>("SureDakika");
@@ -31,7 +31,8 @@ public class TokenService
             new Claim(ClaimTypes.Name, kullanici.KulAdi),
             new Claim(ClaimTypes.Role, kullanici.Rol),
             new Claim(FirmaIdClaim, firma.FirmaId.ToString()),
-            new Claim(FirmaKoduClaim, firma.FirmaKodu)
+            new Claim(FirmaKoduClaim, firma.FirmaKodu),
+            new Claim(OturumService.OturumClaim, oturumAnahtari.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!));
