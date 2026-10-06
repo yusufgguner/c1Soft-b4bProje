@@ -110,6 +110,55 @@ BEGIN
 END
 GO
 
+IF OBJECT_ID('KullaniciOturum', 'U') IS NULL
+BEGIN
+    CREATE TABLE KullaniciOturum
+    (
+        OturumId INT IDENTITY(1,1) PRIMARY KEY,
+        KullaniciId INT NOT NULL,
+        FirmaId INT NOT NULL,
+        OturumAnahtari UNIQUEIDENTIFIER NOT NULL,
+        Domain NVARCHAR(200) NULL,
+        IpAdresi NVARCHAR(50) NULL,
+        Tarayici NVARCHAR(300) NULL,
+        GirisTarihi DATETIME2 NOT NULL DEFAULT GETDATE(),
+        SonIslemTarihi DATETIME2 NOT NULL DEFAULT GETDATE(),
+        CikisTarihi DATETIME2 NULL,
+        IsAktif BIT NOT NULL DEFAULT 1,
+        KapanmaNedeni NVARCHAR(300) NULL,
+        CONSTRAINT UQ_KullaniciOturum_Anahtar UNIQUE (OturumAnahtari),
+        CONSTRAINT FK_KullaniciOturum_Kullanici FOREIGN KEY (KullaniciId) REFERENCES Kullanici(KullaniciId),
+        CONSTRAINT FK_KullaniciOturum_Firma FOREIGN KEY (FirmaId) REFERENCES Firma(FirmaId)
+    );
+
+    CREATE INDEX IX_KullaniciOturum_Kullanici_Aktif ON KullaniciOturum (KullaniciId, IsAktif);
+END
+GO
+
+IF OBJECT_ID('IslemLog', 'U') IS NULL
+BEGIN
+    CREATE TABLE IslemLog
+    (
+        LogId BIGINT IDENTITY(1,1) PRIMARY KEY,
+        Tarih DATETIME2 NOT NULL DEFAULT GETDATE(),
+        KullaniciId INT NULL,
+        FirmaId INT NULL,
+        KulAdi NVARCHAR(50) NULL,
+        Tur NVARCHAR(30) NOT NULL,
+        Metot NVARCHAR(10) NULL,
+        Yol NVARCHAR(300) NULL,
+        DurumKodu INT NULL,
+        Domain NVARCHAR(200) NULL,
+        IpAdresi NVARCHAR(50) NULL,
+        SureMs INT NULL,
+        Aciklama NVARCHAR(500) NULL
+    );
+
+    CREATE INDEX IX_IslemLog_Tarih ON IslemLog (Tarih DESC);
+    CREATE INDEX IX_IslemLog_Kullanici ON IslemLog (KullaniciId);
+END
+GO
+
 IF NOT EXISTS (SELECT 1 FROM Firma WHERE FirmaKodu = 'C1SOFT')
 BEGIN
     INSERT INTO Firma (FirmaKodu, Adi, Sehir, Email)

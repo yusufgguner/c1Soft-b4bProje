@@ -19,6 +19,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<SiparisR> SiparisR { get; set; }
     public DbSet<SiparisD> SiparisD { get; set; }
+    public DbSet<KullaniciOturum> KullaniciOturum { get; set; }
+    public DbSet<IslemLog> IslemLog { get; set; }
 
     // Tablo ilişkilerini, indexleri ve firma filtresini ayarlar
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -57,6 +59,21 @@ public class ApplicationDbContext : DbContext
             .HasOne(x => x.Urun)
             .WithMany()
             .HasForeignKey(x => x.UrunId);
+
+        modelBuilder.Entity<KullaniciOturum>()
+            .HasOne(x => x.Kullanici)
+            .WithMany()
+            .HasForeignKey(x => x.KullaniciId);
+
+        modelBuilder.Entity<KullaniciOturum>()
+            .HasOne(x => x.Firma)
+            .WithMany()
+            .HasForeignKey(x => x.FirmaId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<KullaniciOturum>()
+            .HasIndex(x => x.OturumAnahtari)
+            .IsUnique();
 
         modelBuilder.Entity<Product>().HasQueryFilter(x => x.FirmaId == aktifFirmaId);
         modelBuilder.Entity<SiparisR>().HasQueryFilter(x => x.FirmaId == aktifFirmaId);
