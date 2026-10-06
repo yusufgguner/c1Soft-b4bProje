@@ -159,6 +159,30 @@ BEGIN
 END
 GO
 
+IF OBJECT_ID('HataLog', 'U') IS NULL
+BEGIN
+    CREATE TABLE HataLog
+    (
+        HataId INT IDENTITY(1,1) PRIMARY KEY,
+        Tarih DATETIME2 NOT NULL DEFAULT GETDATE(),
+        KullaniciId INT NULL,
+        FirmaId INT NULL,
+        KulAdi NVARCHAR(50) NULL,
+        Metot NVARCHAR(10) NULL,
+        Yol NVARCHAR(300) NULL,
+        Domain NVARCHAR(200) NULL,
+        IpAdresi NVARCHAR(50) NULL,
+        HataTipi NVARCHAR(200) NOT NULL,
+        Mesaj NVARCHAR(1000) NOT NULL,
+        Detay NVARCHAR(MAX) NULL,
+        IsCozuldu BIT NOT NULL DEFAULT 0,
+        CozulmeTarihi DATETIME2 NULL
+    );
+
+    CREATE INDEX IX_HataLog_Tarih ON HataLog (Tarih DESC);
+END
+GO
+
 IF NOT EXISTS (SELECT 1 FROM Firma WHERE FirmaKodu = 'C1SOFT')
 BEGIN
     INSERT INTO Firma (FirmaKodu, Adi, Sehir, Email)

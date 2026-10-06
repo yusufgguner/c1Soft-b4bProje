@@ -9,6 +9,8 @@ public class PanelOzet
     public int BugunDusurulenOturum { get; set; }
     public int BugunSiparis { get; set; }
     public decimal BugunCiro { get; set; }
+    public int AcikHata { get; set; }
+    public int BugunHata { get; set; }
     public List<SiparisSatiri> SonSiparisler { get; set; } = new List<SiparisSatiri>();
     public List<OturumSatiri> SonGirisler { get; set; } = new List<OturumSatiri>();
 }

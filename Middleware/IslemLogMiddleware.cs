@@ -29,10 +29,16 @@ public class IslemLogMiddleware
         }
 
         var sure = Stopwatch.StartNew();
+        int? durumKodu = null;
 
         try
         {
             await next(context);
+        }
+        catch
+        {
+            durumKodu = StatusCodes.Status500InternalServerError;
+            throw;
         }
         finally
         {
@@ -49,7 +55,7 @@ public class IslemLogMiddleware
                     KulAdi = context.User.Identity?.Name,
                     Metot = context.Request.Method,
                     Yol = yol + context.Request.QueryString,
-                    DurumKodu = context.Response.StatusCode,
+                    DurumKodu = durumKodu ?? context.Response.StatusCode,
                     Domain = OturumService.DomainBul(context),
                     IpAdresi = context.Connection.RemoteIpAddress?.ToString(),
                     SureMs = (int)sure.ElapsedMilliseconds

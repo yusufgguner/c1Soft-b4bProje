@@ -31,6 +31,8 @@ public class PanelController : AdminController
             BugunCiro = await bugunkuSiparisler
                 .Where(x => x.SiparisDurumu != "Cancelled" && x.SiparisDurumu != "Rejected")
                 .SumAsync(x => (decimal?)x.GenelTutar) ?? 0,
+            AcikHata = await db.HataLog.CountAsync(x => !x.IsCozuldu),
+            BugunHata = await db.HataLog.CountAsync(x => x.Tarih >= bugun),
             SonSiparisler = await SiparisSatirlari().OrderByDescending(x => x.Tarih).Take(10).ToListAsync(),
             SonGirisler = await OturumSatirlari(db.KullaniciOturum).OrderByDescending(x => x.GirisTarihi).Take(8).ToListAsync()
         };

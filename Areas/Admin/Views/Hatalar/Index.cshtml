@@ -1,0 +1,74 @@
+@model SayfaliListe<HataLog>
+@{
+    ViewData["Title"] = "Hata Logları";
+    var filtre = (FiltreSecenegi)ViewBag.Filtre;
+    var sekmeler = new (string Kod, string Ad, string Ikon)[]
+    {
+        ("acik", "Açık hatalar", "ti-alert-triangle"),
+        ("cozuldu", "Çözülenler", "ti-circle-check"),
+        ("hepsi", "Tümü", "ti-list")
+    };
+    string donusAdresi = Context.Request.Path + Context.Request.QueryString;
+}
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+            @foreach (var s in sekmeler)
+            {
+                <li class="nav-item">
+                    <a class="nav-link @(filtre.Durum == s.Kod ? "active" : "")" asp-action="Index" asp-route-durum="@s.Kod"><i class="ti @s.Ikon me-1"></i>@s.Ad</a>
+                </li>
+            }
+        </ul>
+    </div>
+    <div class="card-body border-bottom">
+        <form method="get" class="row g-2">
+            <input type="hidden" name="durum" value="@filtre.Durum" />
+            <div class="col-md-3"><input type="date" name="baslangic" class="form-control" value="@filtre.Baslangic?.ToString("yyyy-MM-dd")" /></div>
+            <div class="col-md-3"><input type="date" name="bitis" class="form-control" value="@filtre.Bitis?.ToString("yyyy-MM-dd")" /></div>
+            <div class="col-md-5"><input type="text" name="arama" class="form-control" placeholder="Hata mesajı / adres / tip" value="@filtre.Arama" /></div>
+            <div class="col-md-1"><button class="btn btn-primary w-100"><i class="ti ti-filter"></i></button></div>
+        </form>
+    </div>
+    <div class="list-group list-group-flush">
+        @foreach (var h in Model.Kayitlar)
+        {
+            <div class="list-group-item">
+                <div class="d-flex align-items-start">
+                    <span class="badge @(h.IsCozuldu ? "bg-green-lt" : "bg-red-lt") me-3">#@h.HataId</span>
+                    <div class="flex-fill">
+                        <div class="fw-medium">@h.Mesaj</div>
+                        <div class="small text-secondary mt-1">
+                            <span class="me-3"><i class="ti ti-clock me-1"></i>@h.Tarih.ToString("dd.MM.yyyy HH:mm:ss")</span>
+                            <span class="me-3"><span class="badge bg-dark-lt">@h.Metot</span> <code>@h.Yol</code></span>
+                            <span class="me-3"><i class="ti ti-user me-1"></i>@(h.KulAdi ?? "-")</span>
+                            <span class="me-3"><i class="ti ti-world me-1"></i>@h.Domain / @h.IpAdresi</span>
+                        </div>
+                        <div class="small text-secondary">@h.HataTipi</div>
+                        @if (!string.IsNullOrEmpty(h.Detay))
+                        {
+                            <a class="small" data-bs-toggle="collapse" href="#detay-@h.HataId">Detayı göster</a>
+                            <pre class="collapse mt-2 mb-0 small" id="detay-@h.HataId" style="white-space: pre-wrap; max-height: 320px; overflow: auto;">@h.Detay</pre>
+                        }
+                    </div>
+                    <form asp-action="DurumDegistir" asp-route-id="@h.HataId" method="post" class="ms-3">
+                        <input type="hidden" name="returnUrl" value="@donusAdresi" />
+                        @if (h.IsCozuldu)
+                        {
+                            <button class="btn btn-outline-secondary btn-sm"><i class="ti ti-rotate me-1"></i>Tekrar aç</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-success btn-sm"><i class="ti ti-check me-1"></i>Çözüldü</button>
+                        }
+                    </form>
+                </div>
+            </div>
+        }
+        @if (Model.ToplamKayit == 0)
+        {
+            <div class="list-group-item text-secondary text-center py-4">Hata kaydı yok.</div>
+        }
+    </div>
+    <partial name="_Sayfalama" model="(Model.Sayfa, Model.ToplamSayfa, Model.ToplamKayit)" />
+</div>

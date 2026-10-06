@@ -23,6 +23,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<SiparisD> SiparisD { get; set; }
     public DbSet<KullaniciOturum> KullaniciOturum { get; set; }
     public DbSet<IslemLog> IslemLog { get; set; }
+    public DbSet<HataLog> HataLog { get; set; }
 
     // Tablo ilişkilerini, indexleri ve firma filtresini ayarlar
     protected override void OnModelCreating(ModelBuilder modelBuilder)

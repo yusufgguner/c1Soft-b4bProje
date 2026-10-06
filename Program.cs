@@ -116,6 +116,8 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+app.UseMiddleware<HataYakalamaMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
