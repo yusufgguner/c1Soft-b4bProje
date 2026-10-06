@@ -1,0 +1,53 @@
+@model SayfaliListe<SiparisSatiri>
+@{
+    ViewData["Title"] = "Siparişler";
+    var filtre = (FiltreSecenegi)ViewBag.Filtre;
+    var durumlar = new Dictionary<string, string>
+    {
+        ["Pending"] = "Bekliyor", ["Approved"] = "Onaylandı", ["Shipped"] = "Kargoda",
+        ["Delivered"] = "Teslim edildi", ["Rejected"] = "Reddedildi", ["Cancelled"] = "İptal"
+    };
+    bool ilkSayfa = Model.Sayfa == 1;
+}
+<div class="card">
+    <div class="card-body border-bottom">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <select name="firmaId" class="form-select" asp-items="ViewBag.Firmalar">
+                    <option value="">Tüm firmalar</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="durum" class="form-select">
+                    <option value="">Tüm durumlar</option>
+                    @foreach (var durum in durumlar)
+                    {
+                        <option value="@durum.Key" selected="@(filtre.Durum == durum.Key)">@durum.Value</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2"><input type="date" name="baslangic" class="form-control" value="@filtre.Baslangic?.ToString("yyyy-MM-dd")" /></div>
+            <div class="col-md-2"><input type="date" name="bitis" class="form-control" value="@filtre.Bitis?.ToString("yyyy-MM-dd")" /></div>
+            <div class="col-md-2"><input type="text" name="arama" class="form-control" placeholder="Sipariş no / kullanıcı" value="@filtre.Arama" /></div>
+            <div class="col-md-1"><button class="btn btn-primary w-100"><i class="ti ti-filter"></i></button></div>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table card-table table-vcenter">
+            <thead>
+            <tr><th>Sipariş</th><th>Firma</th><th>Kullanıcı</th><th>Tarih</th><th class="text-end">Kalem</th><th class="text-end">Tutar</th><th>Durum</th></tr>
+            </thead>
+            <tbody id="@(ilkSayfa ? "canli-siparisler" : "")" data-en-fazla="@Model.SayfaBoyutu" data-firma-id="@filtre.FirmaId" data-durum="@filtre.Durum">
+            @foreach (var siparis in Model.Kayitlar)
+            {
+                <partial name="_SiparisSatiri" model="siparis" />
+            }
+            @if (Model.ToplamKayit == 0)
+            {
+                <tr class="bos-satir"><td colspan="7" class="text-secondary text-center py-4">Sipariş bulunamadı.</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <partial name="_Sayfalama" model="(Model.Sayfa, Model.ToplamSayfa, Model.ToplamKayit)" />
+</div>

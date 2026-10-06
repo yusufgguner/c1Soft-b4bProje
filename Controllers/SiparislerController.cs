@@ -1,9 +1,11 @@
 using c1Soft_b4bProje.Data;
 using c1Soft_b4bProje.Dtos;
+using c1Soft_b4bProje.Hubs;
 using c1Soft_b4bProje.Models;
 using c1Soft_b4bProje.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace c1Soft_b4bProje.Controllers;
@@ -17,11 +19,16 @@ public class SiparislerController : ControllerBase
 
     private readonly ApplicationDbContext db;
     private readonly TenantService tenant;
+    private readonly IHubContext<SiparisHub> siparisHub;
+    private readonly ILogger<SiparislerController> logger;
 
-    public SiparislerController(ApplicationDbContext db, TenantService tenant)
+    public SiparislerController(ApplicationDbContext db, TenantService tenant,
+        IHubContext<SiparisHub> siparisHub, ILogger<SiparislerController> logger)
     {
         this.db = db;
         this.tenant = tenant;
+        this.siparisHub = siparisHub;
+        this.logger = logger;
     }
 
     // Siparişleri listeler
@@ -109,6 +116,8 @@ public class SiparislerController : ControllerBase
         db.SiparisR.Add(siparis);
         await db.SaveChangesAsync();
 
+        await PanelBildir("YeniSiparis", siparis);
+
         return CreatedAtAction(nameof(Get), new { id = siparis.SiparisId }, new { siparis.SiparisId, siparis.SiparisNo, siparis.GenelTutar });
     }
 
@@ -157,7 +166,33 @@ public class SiparislerController : ControllerBase
 
         await db.SaveChangesAsync();
 
+        await PanelBildir("SiparisDurumDegisti", siparis);
+
         return NoContent();
+    }
+
+    // Yönetim paneline sipariş bilgisini anlık gönderir, panel kapalıysa siparişi bozmaz
+    private async Task PanelBildir(string olay, SiparisR siparis)
+    {
+        try
+        {
+            await siparisHub.Clients.All.SendAsync(olay, new
+            {
+                siparis.SiparisId,
+                siparis.SiparisNo,
+                siparis.FirmaId,
+                FirmaKodu = User.FindFirst(TokenService.FirmaKoduClaim)?.Value,
+                KulAdi = User.Identity?.Name,
+                siparis.Tarih,
+                siparis.GenelTutar,
+                siparis.SiparisDurumu,
+                KalemSayisi = siparis.Kalemler.Count
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Sipariş bildirimi panele gönderilemedi");
+        }
     }
 
     // Normal kullanıcı sadece kendi siparişlerini görsün diye sorguyu hazırlar

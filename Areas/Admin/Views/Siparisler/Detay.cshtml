@@ -1,0 +1,59 @@
+@model SiparisR
+@{
+    ViewData["Title"] = "Sipariş " + Model.SiparisNo;
+}
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="ti ti-arrow-left me-1"></i>Siparişler</a>
+</div>
+<div class="row row-cards">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Sipariş bilgisi</h3></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-5">Sipariş no</dt><dd class="col-7">@Model.SiparisNo</dd>
+                    <dt class="col-5">Firma</dt><dd class="col-7">@Model.Kullanici?.Firma?.FirmaKodu - @Model.Kullanici?.Firma?.Adi</dd>
+                    <dt class="col-5">Kullanıcı</dt><dd class="col-7">@Model.Kullanici?.KulAdi (@Model.Kullanici?.AdSoyad)</dd>
+                    <dt class="col-5">Tarih</dt><dd class="col-7">@Model.Tarih.ToString("dd.MM.yyyy HH:mm")</dd>
+                    <dt class="col-5">Durum</dt><dd class="col-7"><partial name="_SiparisDurumu" model="Model.SiparisDurumu" /></dd>
+                    <dt class="col-5">Teslimat</dt><dd class="col-7">@Model.TeslimatAdresi</dd>
+                    <dt class="col-5">Not</dt><dd class="col-7">@(Model.Notu ?? "-")</dd>
+                    @if (Model.GuncellemeTarihi != null)
+                    {
+                        <dt class="col-5">Güncelleme</dt><dd class="col-7">@Model.GuncellemeTarihi?.ToString("dd.MM.yyyy HH:mm")</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Kalemler</h3></div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter">
+                    <thead>
+                    <tr><th>Ürün</th><th class="text-end">Miktar</th><th class="text-end">Birim fiyat</th><th class="text-end">Tutar</th><th class="text-end">KDV</th><th class="text-end">Toplam</th></tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var kalem in Model.Kalemler)
+                    {
+                        <tr>
+                            <td><div class="fw-medium">@kalem.UrunAdi</div><div class="small text-secondary">@kalem.UrunKodu</div></td>
+                            <td class="text-end">@kalem.Miktar</td>
+                            <td class="text-end">@kalem.BirimFiyat.ToString("N2")</td>
+                            <td class="text-end">@kalem.BirimTutar.ToString("N2")</td>
+                            <td class="text-end">@kalem.KDVTutari.ToString("N2")</td>
+                            <td class="text-end fw-medium">@kalem.GenelToplam.ToString("N2")</td>
+                        </tr>
+                    }
+                    </tbody>
+                    <tfoot>
+                    <tr><td colspan="5" class="text-end">Ara toplam</td><td class="text-end">@Model.BrutTutar.ToString("N2") ₺</td></tr>
+                    <tr><td colspan="5" class="text-end">KDV</td><td class="text-end">@Model.VergiTutar.ToString("N2") ₺</td></tr>
+                    <tr><td colspan="5" class="text-end fw-bold">Genel toplam</td><td class="text-end fw-bold">@Model.GenelTutar.ToString("N2") ₺</td></tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
