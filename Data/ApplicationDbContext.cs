@@ -6,13 +6,15 @@ namespace c1Soft_b4bProje.Data;
 
 public class ApplicationDbContext : DbContext
 {
-    private readonly int? aktifFirmaId;
+    private readonly TenantService tenant;
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, TenantService tenant)
         : base(options)
     {
-        aktifFirmaId = tenant.FirmaId;
+        this.tenant = tenant;
     }
+
+    private int? AktifFirmaId => tenant.FirmaId;
 
     public DbSet<Firma> Firma { get; set; }
     public DbSet<Kullanici> Kullanici { get; set; }
@@ -75,8 +77,8 @@ public class ApplicationDbContext : DbContext
             .HasIndex(x => x.OturumAnahtari)
             .IsUnique();
 
-        modelBuilder.Entity<Product>().HasQueryFilter(x => x.FirmaId == aktifFirmaId);
-        modelBuilder.Entity<SiparisR>().HasQueryFilter(x => x.FirmaId == aktifFirmaId);
-        modelBuilder.Entity<SiparisD>().HasQueryFilter(x => x.Siparis!.FirmaId == aktifFirmaId);
+        modelBuilder.Entity<Product>().HasQueryFilter(x => x.FirmaId == AktifFirmaId);
+        modelBuilder.Entity<SiparisR>().HasQueryFilter(x => x.FirmaId == AktifFirmaId);
+        modelBuilder.Entity<SiparisD>().HasQueryFilter(x => x.Siparis!.FirmaId == AktifFirmaId);
     }
 }
