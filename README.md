@@ -1,4 +1,15 @@
-# c1Soft B4B API
+# c1Soft B4B
+
+- `backend/`: .NET 9 Web API (+ yönetim paneli `/admin`)
+- `frontend/`: React + Vite + TypeScript kullanıcı ekranı (giriş, ürün listesi ve arama)
+
+## Çalıştırma
+
+1. `docker compose up -d` (Elasticsearch + Redis, aşağıdaki kurulum adımlarına bak)
+2. Backend: `cd backend` → `dotnet run --launch-profile http` (http://localhost:5178)
+3. Frontend: `cd frontend` → `npm install` → `npm run dev` (http://localhost:5173)
+
+Frontend `/api` isteklerini geliştirmede backend'e yönlendiriyor. Canlıda frontend başka adresten yayınlanacaksa adresi `backend/appsettings.json` içindeki `Cors:Adresler` listesine ekle.
 
 ## Ürün arama (Elasticsearch + Redis)
 
@@ -18,7 +29,7 @@ Docker Desktop açık olmalı.
 
 1. `.env.example` dosyasını `.env` olarak kopyalayıp iki şifreyi yaz.
 2. `docker compose up -d`
-3. Proje klasörüne `appsettings.Local.json` oluştur:
+3. `backend` klasörüne `appsettings.Local.json` oluştur:
 
 ```json
 {
