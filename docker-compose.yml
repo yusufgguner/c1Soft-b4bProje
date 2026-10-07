@@ -1,4 +1,5 @@
 services:
+  # elasticsearch ayarları (urun arama icin)
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
     container_name: b4b-elasticsearch
@@ -6,17 +7,23 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=true
       - xpack.security.http.ssl.enabled=false
+      # sifre .env den geliyor
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      # ram cok yemesin diye 512mb
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    # port
     ports:
       - "9200:9200"
     volumes:
       - es-data:/usr/share/elasticsearch/data
 
+  # redis ayarları (arama sonuclarini tutmak icin)
   redis:
     image: redis:7-alpine
     container_name: b4b-redis
+    # sifre .env den geliyor
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    # port
     ports:
       - "6379:6379"
 
