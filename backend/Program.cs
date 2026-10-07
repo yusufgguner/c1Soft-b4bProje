@@ -109,6 +109,15 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddSignalR();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("frontend", policy => policy
+        .WithOrigins(builder.Configuration.GetSection("Cors:Adresler").Get<string[]>() ?? Array.Empty<string>())
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .WithExposedHeaders("X-Search-Ms", "X-Search-Source"));
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -151,6 +160,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+
+app.UseCors("frontend");
 
 app.UseAuthentication();
 app.UseMiddleware<IslemLogMiddleware>();
