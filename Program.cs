@@ -5,19 +5,41 @@ using c1Soft_b4bProje.Data;
 using c1Soft_b4bProje.Hubs;
 using c1Soft_b4bProje.Middleware;
 using c1Soft_b4bProje.Services;
+using c1Soft_b4bProje.Services.Arama;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+builder.Services.Configure<AramaAyarlari>(builder.Configuration.GetSection("Arama"));
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+{
+    var redisAyari = ConfigurationOptions.Parse(builder.Configuration["Arama:RedisBaglanti"] ?? "localhost:6379");
+    redisAyari.AbortOnConnectFail = false;
+    redisAyari.ConnectTimeout = 2000;
+    redisAyari.SyncTimeout = 500;
+    redisAyari.AsyncTimeout = 500;
+    return ConnectionMultiplexer.Connect(redisAyari);
+});
+builder.Services.AddSingleton<ProductSearchIndex>();
+builder.Services.AddSingleton<SearchCache>();
+builder.Services.AddSingleton<ProductIndexSync>();
+builder.Services.AddSingleton<ProductIndexInterceptor>();
+builder.Services.AddScoped<ProductSearchService>();
+builder.Services.AddHostedService<AramaIndeksHazirlayici>();
+
+builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+    options.UseSqlServer(connectionString).AddInterceptors(sp.GetRequiredService<ProductIndexInterceptor>()));
 
 builder.Services.AddHttpContextAccessor();
 

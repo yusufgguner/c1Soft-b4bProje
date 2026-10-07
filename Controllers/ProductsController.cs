@@ -1,7 +1,9 @@
 using c1Soft_b4bProje.Data;
 using c1Soft_b4bProje.Dtos;
 using c1Soft_b4bProje.Models;
+using System.Globalization;
 using c1Soft_b4bProje.Services;
+using c1Soft_b4bProje.Services.Arama;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -56,8 +58,23 @@ public class ProductsController : ControllerBase
             .ToListAsync();
     }
 
+    // Ürünleri arama motoruyla arar, süreyi ve kaynağı başlıkta döner
+    [HttpGet("search")]
+    public async Task<ActionResult<UrunAramaSonucu>> Search([FromQuery] UrunAramaIstegi istek, [FromServices] ProductSearchService arama)
+    {
+        if (tenant.FirmaId == null)
+        {
+            return Forbid();
+        }
+
+        var (sonuc, kaynak, ms) = await arama.AraAsync(tenant.FirmaId.Value, istek);
+        Response.Headers["X-Search-Ms"] = ms.ToString("0.000", CultureInfo.InvariantCulture);
+        Response.Headers["X-Search-Source"] = kaynak;
+        return sonuc;
+    }
+
     // Ürünü id ile getirir
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<ProductDto>> Get(int id)
     {
         var urun = await db.Products.FirstOrDefaultAsync(x => x.ProductId == id);
