@@ -18,3 +18,7 @@ appsettings.Local.json
 
 # Docker ortam sifreleri
 .env
+
+# frontend
+node_modules/
+dist/
