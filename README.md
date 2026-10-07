@@ -46,3 +46,18 @@ Yanıt başlıkları:
 - `X-Search-Source`: sonucun geldiği yer (`memory`, `redis`, `elastic`, `sql`)
 
 Sistem yöneticisi indeksi baştan kurmak için: `POST /api/admin/search/reindex`
+
+### Örnek ürünler ve hız testi
+
+Arama denemek için `tools/ornek-urunler.sql` DEMO1 ve DEMO2'ye 15.000'er otomotiv ürünü ekler (fren, filtre, amortisör, akü vs. + araç modeli + marka). Ekledikten sonra indeksi yenile (`POST /api/admin/search/reindex`) ya da indeksi silip projeyi yeniden başlat.
+
+Hız testi: `.\tools\arama-benchmark.ps1 -FirmaKodu DEMO1 -KulAdi admin -Sifre ****`
+
+Benim makinemde 30.000 ürünle, 100 farklı arama:
+
+| Durum | Kaynak | Ortalama | p95 | En kötü |
+|---|---|---|---|---|
+| Tekrar eden arama | memory | 0,01 ms | 0,01 ms | 0,62 ms |
+| İlk kez yapılan arama | elastic | 11 ms | 17 ms | 38 ms |
+
+Tekrar eden aramalar 1 ms altında. İlk kez yapılan arama Elasticsearch'e gidiyor, o yüzden birkaç ms sürüyor; sonuç önbelleğe yazıldıktan sonra aynı arama 1 ms altına iniyor.
